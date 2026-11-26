@@ -3,103 +3,85 @@ from tkinter import messagebox
 from quiz_manager import QuizManager
 
 
-class QuizAppGUI:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Quiz Practice Application")
-        self.root.geometry("550x420")
-        self.root.configure(bg="#f4f6f9")
+class QuizApp:
+    def __init__(self, window):
+        # 1. Create the main window and connect to QuizManager
+        self.window = window
+        self.window.title("Quiz Practice Application")
+        self.window.geometry("500x400")
 
         self.manager = QuizManager()
         self.manager.load_initial_questions()
 
-        self.container = tk.Frame(self.root, bg="#f4f6f9")
-        self.container.pack(fill="both", expand=True, padx=20, pady=20)
+        # 2. Create one main Frame (box) that holds whichever screen is currently visible
+        self.screen = tk.Frame(self.window)
+        self.screen.pack(pady=20)
 
-        self.show_main_menu()
+        # 3. Start on the Home Screen
+        self.show_home_screen()
 
     def clear_screen(self):
-        for widget in self.container.winfo_children():
-            widget.destroy()
+        # Delete everything inside the screen Frame before drawing a new screen
+        for item in self.screen.winfo_children():
+            item.destroy()
 
-    def show_main_menu(self):
+    # ---------------- HOME SCREEN ----------------
+    def show_home_screen(self):
         self.clear_screen()
 
-        tk.Label(
-            self.container,
-            text="Quiz Practice Application",
-            font=("Segoe UI", 18, "bold"),
-            bg="#f4f6f9",
-            fg="#1e293b",
-        ).pack(pady=(10, 25))
+        tk.Label(self.screen, text="Quiz Practice Application", font=("Arial", 16, "bold")).pack(pady=15)
 
-        buttons = [
-            ("Take a Topic Quiz", self.show_topic_selection),
-            ("Take Revision Quiz", self.start_revision),
-            ("Add a Question", self.show_add_question),
-            ("Edit a Question", self.show_edit_question),
-            ("Exit", self.root.quit),
-        ]
+        # Learner section
+        tk.Label(self.screen, text="Learner Menu", font=("Arial", 11, "bold")).pack(pady=(10, 5))
+        tk.Button(self.screen, text="Take a Topic Quiz", width=25, command=self.show_topic_screen).pack(pady=4)
+        tk.Button(self.screen, text="Take Revision Quiz", width=25, command=self.start_revision).pack(pady=4)
 
-        for text, command in buttons:
-            tk.Button(
-                self.container,
-                text=text,
-                command=command,
-                font=("Segoe UI", 11),
-                width=26,
-                pady=8,
-                bg="#2563eb",
-                fg="white",
-                relief="flat",
-                cursor="hand2",
-            ).pack(pady=6)
+        # Instructor / Admin section (for Requirement 1: Add & Edit questions)
+        tk.Label(self.screen, text="Instructor Menu", font=("Arial", 11, "bold")).pack(pady=(15, 5))
+        tk.Button(self.screen, text="Manage Question Bank", width=25, command=self.show_admin_screen).pack(pady=4)
 
-    def show_topic_selection(self):
+    # ---------------- LEARNER: TOPIC SELECTION ----------------
+    def show_topic_screen(self):
         self.clear_screen()
-        tk.Label(
-            self.container,
-            text="Select a Topic",
-            font=("Segoe UI", 15, "bold"),
-            bg="#f4f6f9",
-        ).pack(pady=(10, 15))
 
-        for topic in self.manager.get_topics():
-            tk.Button(
-                self.container,
-                text=topic,
-                command=lambda t=topic: messagebox.showinfo("Topic", f"Selected: {t}"),
-                font=("Segoe UI", 11),
-                width=22,
-                pady=6,
-                bg="#0f766e",
-                fg="white",
-                relief="flat",
-            ).pack(pady=5)
+        tk.Label(self.screen, text="Choose a Topic", font=("Arial", 14, "bold")).pack(pady=15)
 
-        tk.Button(
-            self.container, text="← Back to Menu", command=self.show_main_menu
-        ).pack(pady=20)
+        topics = self.manager.get_topics()
+        for topic in topics:
+            # Create a button for each topic
+            btn = tk.Button(self.screen, text=topic, width=20)
+            btn.config(command=lambda chosen=topic: self.open_topic_quiz(chosen))
+            btn.pack(pady=4)
+
+        tk.Button(self.screen, text="Back to Home", width=20, command=self.show_home_screen).pack(pady=20)
+
+    def open_topic_quiz(self, topic):
+        messagebox.showinfo("Quiz Starting", f"Loading questions for: {topic}")
 
     def start_revision(self):
-        messagebox.showinfo("Revision Quiz", "Revision quiz screen coming next!")
+        messagebox.showinfo("Revision Quiz", "Checking your latest missed questions...")
 
-    def show_add_question(self):
+    # ---------------- INSTRUCTOR: ADD / EDIT MENU ----------------
+    def show_admin_screen(self):
         self.clear_screen()
-        tk.Label(
-            self.container, text="Add a New Question", font=("Segoe UI", 14, "bold"), bg="#f4f6f9"
-        ).pack(pady=10)
-        tk.Button(self.container, text="← Back to Menu", command=self.show_main_menu).pack(pady=20)
 
-    def show_edit_question(self):
+        tk.Label(self.screen, text="Manage Question Bank", font=("Arial", 14, "bold")).pack(pady=15)
+        tk.Button(self.screen, text="Add a New Question", width=25, command=self.show_add_screen).pack(pady=5)
+        tk.Button(self.screen, text="Edit an Existing Question", width=25, command=self.show_edit_screen).pack(pady=5)
+        tk.Button(self.screen, text="Back to Home", width=25, command=self.show_home_screen).pack(pady=20)
+
+    def show_add_screen(self):
         self.clear_screen()
-        tk.Label(
-            self.container, text="Edit a Question", font=("Segoe UI", 14, "bold"), bg="#f4f6f9"
-        ).pack(pady=10)
-        tk.Button(self.container, text="← Back to Menu", command=self.show_main_menu).pack(pady=20)
+        tk.Label(self.screen, text="Add Question (Form Next)", font=("Arial", 13, "bold")).pack(pady=15)
+        tk.Button(self.screen, text="Back", width=15, command=self.show_admin_screen).pack(pady=10)
+
+    def show_edit_screen(self):
+        self.clear_screen()
+        tk.Label(self.screen, text="Edit Question (Form Next)", font=("Arial", 13, "bold")).pack(pady=15)
+        tk.Button(self.screen, text="Back", width=15, command=self.show_admin_screen).pack(pady=10)
 
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = QuizAppGUI(root)
-    root.mainloop()
+# Start the program
+window = tk.Tk()
+app = QuizApp(window)
+window.mainloop()
