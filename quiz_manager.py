@@ -10,30 +10,35 @@ class QuizManager:
 
     def load_initial_questions(self):
         self.questions = [
-            Question("1", "Python Basics", "Which function displays output on the screen in Python?",
+            # Quiz 1 (4 questions)
+            Question("1", "Python", "Quiz 1", "Which function displays output on the screen in Python?",
                      {"A": "echo()", "B": "print()", "C": "input()", "D": "show()"}, "B"),
-            Question("2", "Python Basics", "What is the data type of 3.14 in Python?",
+            Question("2", "Python", "Quiz 1", "What is the data type of 3.14 in Python?",
                      {"A": "int", "B": "str", "C": "float", "D": "bool"}, "C"),
-            Question("3", "Python Basics", "Which string method removes leading and trailing spaces?",
+            Question("3", "Python", "Quiz 1", "Which string method removes leading and trailing spaces?",
                      {"A": "strip()", "B": "clean()", "C": "upper()", "D": "cut()"}, "A"),
-            Question("4", "Python Control Flow", "Which keyword checks another condition after an if statement?",
+            Question("4", "Python", "Quiz 1", "Which string method converts all letters to uppercase?",
+                     {"A": "caps()", "B": "upper()", "C": "big()", "D": "top()"}, "B"),
+
+            # Quiz 2 (4 questions)
+            Question("5", "Python", "Quiz 2", "Which keyword checks another condition after an if statement?",
                      {"A": "else if", "B": "elseif", "C": "elif", "D": "when"}, "C"),
-            Question("5", "Python Control Flow", "Which loop repeats as long as a condition stays True?",
+            Question("6", "Python", "Quiz 2", "Which loop repeats as long as a condition stays True?",
                      {"A": "for", "B": "while", "C": "repeat", "D": "loop"}, "B"),
-            Question("6", "Python Control Flow", "What does True and False evaluate to?",
-                     {"A": "True", "B": "False", "C": "None", "D": "1"}, "B"),
-            Question("7", "Python Functions", "Which keyword is used to define a function in Python?",
+            Question("7", "Python", "Quiz 2", "Which keyword is used to define a function in Python?",
                      {"A": "func", "B": "define", "C": "def", "D": "function"}, "C"),
-            Question("8", "Python Functions", "What does a function return if it has no return statement?",
-                     {"A": "0", "B": "False", "C": "Empty string", "D": "None"}, "D"),
-            Question("9", "Python Functions", "Which built-in function rounds a decimal number?",
+            Question("8", "Python", "Quiz 2", "Which built-in function rounds a decimal number?",
                      {"A": "round()", "B": "approx()", "C": "floor()", "D": "short()"}, "A"),
-            Question("10", "Python Data Structures", "Which brackets are used to create a list in Python?",
+
+            # Quiz 3 (4 questions)
+            Question("9", "Python", "Quiz 3", "Which brackets are used to create a list in Python?",
                      {"A": "( )", "B": "{ }", "C": "[ ]", "D": "< >"}, "C"),
-            Question("11", "Python Data Structures", "Which data structure stores key-value pairs?",
+            Question("10", "Python", "Quiz 3", "Which data structure stores key-value pairs?",
                      {"A": "list", "B": "tuple", "C": "set", "D": "dict"}, "D"),
-            Question("12", "Python Data Structures", "Which collection is ordered and cannot be modified after creation?",
+            Question("11", "Python", "Quiz 3", "Which collection is ordered and cannot be modified after creation?",
                      {"A": "list", "B": "tuple", "C": "dict", "D": "set"}, "B"),
+            Question("12", "Python", "Quiz 3", "Which function returns the number of items in a list?",
+                     {"A": "count()", "B": "size()", "C": "len()", "D": "total()"}, "C"),
         ]
 
     def get_topics(self):
@@ -43,20 +48,39 @@ class QuizManager:
                 topics.append(q.topic)
         return topics
 
-    def get_questions_by_topic(self, topic):
+    def get_quizzes_by_topic(self, topic):
+        quizzes = []
+        for q in self.questions:
+            if q.topic == topic and q.quiz not in quizzes:
+                quizzes.append(q.quiz)
+        return quizzes
+
+    def get_questions(self, topic, quiz):
         matched = []
         for q in self.questions:
-            if q.topic == topic:
+            if q.topic == topic and q.quiz == quiz:
                 matched.append(q)
         return matched
 
-    def run_quiz(self, quiz_questions, quiz_name):
+    def choose_from_list(self, items, prompt):
+        valid_choices = []
+        for i in range(len(items)):
+            print(f"{i + 1}. {items[i]}")
+            valid_choices.append(str(i + 1))
+
+        choice = input(prompt).strip()
+        while choice not in valid_choices:
+            choice = input("Invalid choice. Enter a valid number: ").strip()
+
+        return items[int(choice) - 1]
+
+    def run_quiz(self, quiz_questions, quiz_title):
         randomized = random.sample(quiz_questions, len(quiz_questions))
         score = 0
         missed_ids = []
         incorrect_details = []
 
-        print(f"\nStarting {quiz_name} ({len(randomized)} questions)")
+        print(f"\nStarting {quiz_title} ({len(randomized)} questions)")
 
         for i in range(len(randomized)):
             q = randomized[i]
@@ -77,14 +101,14 @@ class QuizManager:
         percentage = round((score / total) * 100, 2)
 
         self.latest_result = {
-            "topic": quiz_name,
+            "quiz": quiz_title,
             "score": score,
             "total": total,
             "percentage": percentage,
         }
         self.missed_question_ids = missed_ids
 
-        print(f"\nQuiz Complete: {quiz_name}")
+        print(f"\nQuiz Complete: {quiz_title}")
         print(f"Score: {score}/{total} ({percentage}%)")
 
         if len(incorrect_details) == 0:
@@ -106,18 +130,14 @@ class QuizManager:
             return
 
         print("\nAvailable Topics:")
-        valid_choices = []
-        for i in range(len(topics)):
-            print(f"{i + 1}. {topics[i]}")
-            valid_choices.append(str(i + 1))
+        selected_topic = self.choose_from_list(topics, "\nSelect a topic number: ")
 
-        choice = input("\nSelect a topic number: ").strip()
-        while choice not in valid_choices:
-            choice = input("Invalid choice. Select a valid topic number: ").strip()
+        quizzes = self.get_quizzes_by_topic(selected_topic)
+        print(f"\nAvailable Quizzes in {selected_topic}:")
+        selected_quiz = self.choose_from_list(quizzes, "\nSelect a quiz number: ")
 
-        selected_topic = topics[int(choice) - 1]
-        quiz_questions = self.get_questions_by_topic(selected_topic)
-        self.run_quiz(quiz_questions, selected_topic)
+        quiz_questions = self.get_questions(selected_topic, selected_quiz)
+        self.run_quiz(quiz_questions, f"{selected_topic} - {selected_quiz}")
 
     def take_revision_quiz(self):
         if self.latest_result is None:
@@ -147,13 +167,21 @@ class QuizManager:
                 print("A question with this ID already exists.")
                 return
 
-        topic = input("Enter topic (e.g. Python Basics): ").strip()
+        topic = input("Enter topic (e.g. Python): ").strip()
         if topic == "":
             print("Topic cannot be empty.")
             return
-        for existing in self.get_topics():
-            if existing.upper() == topic.upper():
-                topic = existing
+        for existing_topic in self.get_topics():
+            if existing_topic.upper() == topic.upper():
+                topic = existing_topic
+
+        quiz = input("Enter quiz name (e.g. Quiz 1, Quiz 2, Quiz 3): ").strip()
+        if quiz == "":
+            print("Quiz name cannot be empty.")
+            return
+        for existing_quiz in self.get_quizzes_by_topic(topic):
+            if existing_quiz.upper() == quiz.upper():
+                quiz = existing_quiz
 
         text = input("Enter question text: ").strip()
         if text == "":
@@ -168,14 +196,14 @@ class QuizManager:
         while correct not in ["A", "B", "C", "D"]:
             correct = input("Invalid input. Enter A, B, C, or D: ").strip().upper()
 
-        new_question = Question(q_id, topic, text, options, correct)
+        new_question = Question(q_id, topic, quiz, text, options, correct)
         self.questions.append(new_question)
         print("Question added successfully.")
 
     def edit_question(self):
         print("\nExisting Questions:")
         for q in self.questions:
-            print(f"ID {q.id} [{q.topic}]: {q.text}")
+            print(f"ID {q.id} [{q.topic} - {q.quiz}]: {q.text}")
 
         q_id = input("\nEnter the ID of the question to edit: ").strip()
         target = None
@@ -189,10 +217,17 @@ class QuizManager:
 
         new_topic = input(f"New topic (Enter to keep '{target.topic}'): ").strip()
         if new_topic != "":
-            for existing in self.get_topics():
-                if existing.upper() == new_topic.upper():
-                    new_topic = existing
+            for existing_topic in self.get_topics():
+                if existing_topic.upper() == new_topic.upper():
+                    new_topic = existing_topic
             target.topic = new_topic
+
+        new_quiz = input(f"New quiz name (Enter to keep '{target.quiz}'): ").strip()
+        if new_quiz != "":
+            for existing_quiz in self.get_quizzes_by_topic(target.topic):
+                if existing_quiz.upper() == new_quiz.upper():
+                    new_quiz = existing_quiz
+            target.quiz = new_quiz
 
         new_text = input("New question text (Enter to keep current): ").strip()
         if new_text != "":
